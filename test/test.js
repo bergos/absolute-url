@@ -159,4 +159,25 @@ describe('absoluteUrl', function () {
 
     assert.equal(req.absoluteUrl(), 'https://otherhost:456/index.html')
   })
+
+  describe('.attach', function () {
+    it('should attach the .absoluteUrl method to the request', function () {
+      var req = {}
+
+      absoluteUrl.attach(req)
+
+      assert.equal(typeof req.absoluteUrl, 'function')
+    })
+
+    it('should do nothing if there is already a .absoluteUrl method', function () {
+      var func = function () {}
+      var req = {
+        absoluteUrl: func
+      }
+
+      absoluteUrl.attach(req)
+
+      assert.equal(req.absoluteUrl, func)
+    })
+  })
 })

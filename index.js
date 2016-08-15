@@ -46,11 +46,19 @@ function absoluteUrl (options, req, res, next) {
     return url.format(absoluteUrl)
   }
 
-  next()
+  if (next) {
+    next()
+  }
 }
 
 function init (options) {
   return absoluteUrl.bind(null, options)
+}
+
+init.attach = function (req, options) {
+  if (!req.absoluteUrl) {
+    absoluteUrl(options, req)
+  }
 }
 
 module.exports = init
