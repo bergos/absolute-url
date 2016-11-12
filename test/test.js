@@ -10,7 +10,7 @@ describe('absoluteUrl', function () {
         host: 'example.org:123',
       },
       socket: {},
-      protocol: 'http',
+      protocol: 'http:',
       url: 'index.html'
     }
 
@@ -24,7 +24,7 @@ describe('absoluteUrl', function () {
       headers: {
         host: 'example.org:123',
       },
-      protocol: 'http',
+      protocol: 'http:',
       socket: {},
       url: 'index.html',
       originalUrl: 'original/index.html'
@@ -47,7 +47,7 @@ describe('absoluteUrl', function () {
           }
         }
       },
-      protocol: 'http',
+      protocol: 'http:',
       url: 'index.html'
     }
 
@@ -68,7 +68,7 @@ describe('absoluteUrl', function () {
           }
         }
       },
-      protocol: 'http',
+      protocol: 'http:',
       url: 'index.html'
     }
 
@@ -82,7 +82,7 @@ describe('absoluteUrl', function () {
       headers: {
         host: 'example.org:123',
       },
-      protocol: 'http',
+      protocol: 'http:',
       socket: {
         ssl: {}
       },
@@ -99,7 +99,7 @@ describe('absoluteUrl', function () {
       headers: {
         host: 'example.org:80',
       },
-      protocol: 'http',
+      protocol: 'http:',
       socket: {},
       url: 'index.html'
     }
@@ -114,7 +114,7 @@ describe('absoluteUrl', function () {
       headers: {
         host: 'example.org:443',
       },
-      protocol: 'http',
+      protocol: 'http:',
       socket: {
         ssl: {}
       },
@@ -131,7 +131,7 @@ describe('absoluteUrl', function () {
       headers: {
         host: 'example.org:123',
       },
-      protocol: 'http',
+      protocol: 'http:',
       socket: {},
       url: 'index.html'
     }
@@ -149,7 +149,7 @@ describe('absoluteUrl', function () {
         'x-forwarded-host': 'otherhost',
         'x-forwarded-port': 456
       },
-      protocol: 'http',
+      protocol: 'http:',
       socket: {},
       url: 'index.html'
     }
@@ -165,7 +165,7 @@ describe('absoluteUrl', function () {
         get: function (key) { return key === 'trust proxy' }
       },
       hostname: 'example.org',
-      protocol: 'http',
+      protocol: 'http:',
       socket: {
         address: function () { return { port: 123 } }
       },

@@ -10,8 +10,8 @@ function absoluteUrl (options, req, res, next) {
       pathname: this.originalUrl || this.url
     }
 
-    if (absoluteUrl.protocol === 'http' && req.socket.ssl) {
-      absoluteUrl.protocol += 's'
+    if (absoluteUrl.protocol === 'http:' && req.socket.ssl) {
+      absoluteUrl.protocol = 'https:'
     }
 
     if (options.basePath) {
@@ -42,11 +42,11 @@ function absoluteUrl (options, req, res, next) {
     absoluteUrl.port = parseInt(host.substring(hostPortIndex + 1))
 
     // ignore port if default http(s) port
-    if (absoluteUrl.protocol === 'http' && absoluteUrl.port === 80) {
+    if (absoluteUrl.protocol === 'http:' && absoluteUrl.port === 80) {
       absoluteUrl.port = ''
     }
 
-    if (absoluteUrl.protocol === 'https' && absoluteUrl.port === 443) {
+    if (absoluteUrl.protocol === 'https:' && absoluteUrl.port === 443) {
       absoluteUrl.port = ''
     }
 
