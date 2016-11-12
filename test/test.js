@@ -6,14 +6,11 @@ var absoluteUrl = require('../')
 describe('absoluteUrl', function () {
   it('should generate a HTTP URL that contains protocol, hostname, port and path', function () {
     var req = {
-      app: {
-        get: function () { return null }
+      headers: {
+        host: 'example.org:123',
       },
-      hostname: 'example.org',
+      socket: {},
       protocol: 'http',
-      socket: {
-        address: function () { return { port: 123 } }
-      },
       url: 'index.html'
     }
 
@@ -24,14 +21,11 @@ describe('absoluteUrl', function () {
 
   it('should generate a HTTP URL that contains protocol, hostname, port and path from originalUrl', function () {
     var req = {
-      app: {
-        get: function () { return null }
+      headers: {
+        host: 'example.org:123',
       },
-      hostname: 'example.org',
       protocol: 'http',
-      socket: {
-        address: function () { return { port: 123 } }
-      },
+      socket: {},
       url: 'index.html',
       originalUrl: 'original/index.html'
     }
@@ -41,15 +35,55 @@ describe('absoluteUrl', function () {
     assert.equal(req.absoluteUrl(), 'http://example.org:123/original/index.html')
   })
 
+  it('should generate a HTTP URL that contains protocol, hostname, port and path using socket address if there is no host header', function () {
+    var req = {
+      headers: {},
+      socket: {
+        address: function () {
+          return {
+            address: '127.0.0.1',
+            family: 'IPv4',
+            port: 123
+          }
+        }
+      },
+      protocol: 'http',
+      url: 'index.html'
+    }
+
+    absoluteUrl()(req, null, function () {})
+
+    assert.equal(req.absoluteUrl(), 'http://127.0.0.1:123/index.html')
+  })
+
+  it('should generate a HTTP URL that contains protocol, hostname, port and path using socket IPv6 address if there is no host header', function () {
+    var req = {
+      headers: {},
+      socket: {
+        address: function () {
+          return {
+            address: '::1',
+            family: 'IPv6',
+            port: 123
+          }
+        }
+      },
+      protocol: 'http',
+      url: 'index.html'
+    }
+
+    absoluteUrl()(req, null, function () {})
+
+    assert.equal(req.absoluteUrl(), 'http://[::1]:123/index.html')
+  })
+
   it('should detect SSL/TLS protocol', function () {
     var req = {
-      app: {
-        get: function () { return null }
+      headers: {
+        host: 'example.org:123',
       },
-      hostname: 'example.org',
       protocol: 'http',
       socket: {
-        address: function () { return { port: 123 } },
         ssl: {}
       },
       url: 'index.html'
@@ -62,14 +96,11 @@ describe('absoluteUrl', function () {
 
   it('should skip default HTTP port', function () {
     var req = {
-      app: {
-        get: function () { return null }
+      headers: {
+        host: 'example.org:80',
       },
-      hostname: 'example.org',
       protocol: 'http',
-      socket: {
-        address: function () { return { port: 80 } }
-      },
+      socket: {},
       url: 'index.html'
     }
 
@@ -80,13 +111,11 @@ describe('absoluteUrl', function () {
 
   it('should skip default HTTPS port', function () {
     var req = {
-      app: {
-        get: function () { return null }
+      headers: {
+        host: 'example.org:443',
       },
-      hostname: 'example.org',
       protocol: 'http',
       socket: {
-        address: function () { return { port: 443 } },
         ssl: {}
       },
       url: 'index.html'
@@ -99,14 +128,11 @@ describe('absoluteUrl', function () {
 
   it('should use basePath', function () {
     var req = {
-      app: {
-        get: function () { return null }
+      headers: {
+        host: 'example.org:123',
       },
-      hostname: 'example.org',
       protocol: 'http',
-      socket: {
-        address: function () { return { port: 123 } }
-      },
+      socket: {},
       url: 'index.html'
     }
 
@@ -117,20 +143,15 @@ describe('absoluteUrl', function () {
 
   it('should ignore proxy headers if not enabled', function () {
     var req = {
-      app: {
-        get: function () { return null }
-      },
-      hostname: 'example.org',
-      protocol: 'http',
-      socket: {
-        address: function () { return { port: 123 } }
-      },
-      url: 'index.html',
       headers: {
+        host: 'example.org:123',
         'x-forwarded-proto': 'https',
         'x-forwarded-host': 'otherhost',
         'x-forwarded-port': 456
-      }
+      },
+      protocol: 'http',
+      socket: {},
+      url: 'index.html'
     }
 
     absoluteUrl()(req, null, function () {})

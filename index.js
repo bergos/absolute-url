@@ -7,8 +7,6 @@ function absoluteUrl (options, req, res, next) {
   req.absoluteUrl = function () {
     var absoluteUrl = {
       protocol: this.protocol,
-      hostname: this.hostname,
-      port: this.socket.address().port,
       pathname: this.originalUrl || this.url
     }
 
@@ -20,19 +18,28 @@ function absoluteUrl (options, req, res, next) {
       absoluteUrl.pathname = path.join(options.basePath, absoluteUrl.pathname)
     }
 
+    var host = this.headers.host
+
     // use proxy header fields?
-    if (req.app.get('trust proxy')) {
+    if (req.app && req.app.get('trust proxy')) {
       if ('x-forwarded-proto' in this.headers) {
         absoluteUrl.protocol = this.headers['x-forwarded-proto']
       }
 
       if ('x-forwarded-host' in this.headers) {
-        var hostParts = this.headers['x-forwarded-host'].split(':')
-
-        absoluteUrl.hostname = hostParts.shift()
-        absoluteUrl.port = hostParts.shift()
+        host = this.headers['x-forwarded-host']
       }
     }
+
+    if (!host) {
+      var address = req.socket.address()
+
+      host = address.address + ':' + address.port
+    }
+
+    var hostPortIndex = host.lastIndexOf(':')
+    absoluteUrl.hostname = host.substring(0, hostPortIndex)
+    absoluteUrl.port = parseInt(host.substring(hostPortIndex + 1))
 
     // ignore port if default http(s) port
     if (absoluteUrl.protocol === 'http' && absoluteUrl.port === 80) {
