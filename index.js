@@ -38,8 +38,13 @@ function absoluteUrl (options, req, res, next) {
     }
 
     var hostPortIndex = host.lastIndexOf(':')
-    absoluteUrl.hostname = host.substring(0, hostPortIndex)
-    absoluteUrl.port = parseInt(host.substring(hostPortIndex + 1))
+
+    if (hostPortIndex === -1) {
+      absoluteUrl.hostname = host
+    } else {
+      absoluteUrl.hostname = host.substring(0, hostPortIndex)
+      absoluteUrl.port = parseInt(host.substring(hostPortIndex + 1))
+    }
 
     // ignore port if default http(s) port
     if (absoluteUrl.protocol === 'http:' && absoluteUrl.port === 80) {

@@ -4,6 +4,21 @@ var assert = require('assert')
 var absoluteUrl = require('../')
 
 describe('absoluteUrl', function () {
+  it('should generate a HTTP URL that contains protocol, hostname and path', function () {
+    var req = {
+      headers: {
+        host: 'example.org',
+      },
+      socket: {},
+      protocol: 'http:',
+      url: 'index.html'
+    }
+
+    absoluteUrl()(req, null, function () {})
+
+    assert.equal(req.absoluteUrl(), 'http://example.org/index.html')
+  })
+
   it('should generate a HTTP URL that contains protocol, hostname, port and path', function () {
     var req = {
       headers: {
