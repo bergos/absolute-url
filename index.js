@@ -5,9 +5,12 @@ function absoluteUrl (options, req, res, next) {
   options = options || {}
 
   req.absoluteUrl = function () {
+    var originalUrl = url.parse(this.originalUrl || this.url)
+
     var absoluteUrl = {
       protocol: this.protocol,
-      pathname: this.originalUrl || this.url
+      pathname: originalUrl.pathname,
+      search: originalUrl.search
     }
 
     if (absoluteUrl.protocol === 'http:' && req.socket.ssl) {

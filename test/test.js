@@ -7,7 +7,7 @@ describe('absoluteUrl', function () {
   it('should generate a HTTP URL that contains protocol, hostname and path', function () {
     var req = {
       headers: {
-        host: 'example.org',
+        host: 'example.org'
       },
       socket: {},
       protocol: 'http:',
@@ -19,10 +19,25 @@ describe('absoluteUrl', function () {
     assert.equal(req.absoluteUrl(), 'http://example.org/index.html')
   })
 
+  it('should generate a HTTP URL that contains protocol, hostname, port, path and parameters', function () {
+    var req = {
+      headers: {
+        host: 'example.org:123'
+      },
+      socket: {},
+      protocol: 'http:',
+      url: 'index.html?a=b&c=1'
+    }
+
+    absoluteUrl()(req, null, function () {})
+
+    assert.equal(req.absoluteUrl(), 'http://example.org:123/index.html?a=b&c=1')
+  })
+
   it('should generate a HTTP URL that contains protocol, hostname, port and path', function () {
     var req = {
       headers: {
-        host: 'example.org:123',
+        host: 'example.org:123'
       },
       socket: {},
       protocol: 'http:',
@@ -37,7 +52,7 @@ describe('absoluteUrl', function () {
   it('should generate a HTTP URL that contains protocol, hostname, port and path from originalUrl', function () {
     var req = {
       headers: {
-        host: 'example.org:123',
+        host: 'example.org:123'
       },
       protocol: 'http:',
       socket: {},
@@ -95,7 +110,7 @@ describe('absoluteUrl', function () {
   it('should detect SSL/TLS protocol', function () {
     var req = {
       headers: {
-        host: 'example.org:123',
+        host: 'example.org:123'
       },
       protocol: 'http:',
       socket: {
@@ -112,7 +127,7 @@ describe('absoluteUrl', function () {
   it('should skip default HTTP port', function () {
     var req = {
       headers: {
-        host: 'example.org:80',
+        host: 'example.org:80'
       },
       protocol: 'http:',
       socket: {},
@@ -127,7 +142,7 @@ describe('absoluteUrl', function () {
   it('should skip default HTTPS port', function () {
     var req = {
       headers: {
-        host: 'example.org:443',
+        host: 'example.org:443'
       },
       protocol: 'http:',
       socket: {
@@ -144,7 +159,7 @@ describe('absoluteUrl', function () {
   it('should use basePath', function () {
     var req = {
       headers: {
-        host: 'example.org:123',
+        host: 'example.org:123'
       },
       protocol: 'http:',
       socket: {},
