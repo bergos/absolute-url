@@ -211,6 +211,52 @@ describe('absoluteUrl', function () {
     assert.equal(req.absoluteUrl(), 'https://otherhost:456/index.html')
   })
 
+  it('should use x-forwarded-prefix header', function () {
+    var req = {
+      app: {
+        get: function (key) { return key === 'trust proxy' }
+      },
+      hostname: 'example.org',
+      protocol: 'http:',
+      socket: {
+        address: function () { return { port: 123 } }
+      },
+      url: '/local/path/index.html',
+      headers: {
+        'x-forwarded-proto': 'https',
+        'x-forwarded-host': 'otherhost:456',
+        'x-forwarded-prefix': '/proxy/path'
+      }
+    }
+
+    absoluteUrl()(req, null, function () {})
+
+    assert.equal(req.absoluteUrl(), 'https://otherhost:456/proxy/path/local/path/index.html')
+  })
+
+  it('does not append root path to x-forwarded-prefix', function () {
+    var req = {
+      app: {
+        get: function (key) { return key === 'trust proxy' }
+      },
+      hostname: 'example.org',
+      protocol: 'http:',
+      socket: {
+        address: function () { return { port: 123 } }
+      },
+      url: '/',
+      headers: {
+        'x-forwarded-proto': 'https',
+        'x-forwarded-host': 'otherhost:456',
+        'x-forwarded-prefix': '/proxy/path'
+      }
+    }
+
+    absoluteUrl()(req, null, function () {})
+
+    assert.equal(req.absoluteUrl(), 'https://otherhost:456/proxy/path')
+  })
+
   describe('.attach', function () {
     it('should attach the .absoluteUrl method to the request', function () {
       var req = {}

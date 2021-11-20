@@ -32,6 +32,12 @@ function absoluteUrl (options, req, res, next) {
       if ('x-forwarded-host' in this.headers) {
         host = this.headers['x-forwarded-host']
       }
+
+      if ('x-forwarded-prefix' in this.headers) {
+        absoluteUrl.pathname = absoluteUrl.pathname === '/'
+          ? this.headers['x-forwarded-prefix']
+          : path.join(this.headers['x-forwarded-prefix'], absoluteUrl.pathname)
+      }
     }
 
     if (!host) {
