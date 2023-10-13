@@ -1,234 +1,174 @@
-/* global describe, it */
-
-var assert = require('assert')
-var absoluteUrl = require('../')
+import { strictEqual } from 'node:assert'
+import { describe, it } from 'mocha'
+import request from 'supertest'
+import testWithExpress from './assets/testWithExpress.js'
 
 describe('absoluteUrl', function () {
-  it('should generate a HTTP URL that contains protocol, hostname and path', function () {
-    var req = {
-      headers: {
-        host: 'example.org'
-      },
-      socket: {},
-      protocol: 'http:',
-      url: 'index.html'
-    }
+  describe('protocol', () => {
+    it('should return a URL with http: protocol', async () => {
+      const url = await testWithExpress(async app => {
+        await request(app)
+          .get('/index.html')
+      })
 
-    absoluteUrl()(req, null, function () {})
-
-    assert.equal(req.absoluteUrl(), 'http://example.org/index.html')
-  })
-
-  it('should generate a HTTP URL that contains protocol, hostname, port, path and parameters', function () {
-    var req = {
-      headers: {
-        host: 'example.org:123'
-      },
-      socket: {},
-      protocol: 'http:',
-      url: 'index.html?a=b&c=1'
-    }
-
-    absoluteUrl()(req, null, function () {})
-
-    assert.equal(req.absoluteUrl(), 'http://example.org:123/index.html?a=b&c=1')
-  })
-
-  it('should generate a HTTP URL that contains protocol, hostname, port and path', function () {
-    var req = {
-      headers: {
-        host: 'example.org:123'
-      },
-      socket: {},
-      protocol: 'http:',
-      url: 'index.html'
-    }
-
-    absoluteUrl()(req, null, function () {})
-
-    assert.equal(req.absoluteUrl(), 'http://example.org:123/index.html')
-  })
-
-  it('should generate a HTTP URL that contains protocol, hostname, port and path from originalUrl', function () {
-    var req = {
-      headers: {
-        host: 'example.org:123'
-      },
-      protocol: 'http:',
-      socket: {},
-      url: 'index.html',
-      originalUrl: 'original/index.html'
-    }
-
-    absoluteUrl()(req, null, function () {})
-
-    assert.equal(req.absoluteUrl(), 'http://example.org:123/original/index.html')
-  })
-
-  it('should generate a HTTP URL that contains protocol, hostname, port and path using socket address if there is no host header', function () {
-    var req = {
-      headers: {},
-      socket: {
-        address: function () {
-          return {
-            address: '127.0.0.1',
-            family: 'IPv4',
-            port: 123
-          }
-        }
-      },
-      protocol: 'http:',
-      url: 'index.html'
-    }
-
-    absoluteUrl()(req, null, function () {})
-
-    assert.equal(req.absoluteUrl(), 'http://127.0.0.1:123/index.html')
-  })
-
-  it('should generate a HTTP URL that contains protocol, hostname, port and path using socket IPv6 address if there is no host header', function () {
-    var req = {
-      headers: {},
-      socket: {
-        address: function () {
-          return {
-            address: '::1',
-            family: 'IPv6',
-            port: 123
-          }
-        }
-      },
-      protocol: 'http:',
-      url: 'index.html'
-    }
-
-    absoluteUrl()(req, null, function () {})
-
-    assert.equal(req.absoluteUrl(), 'http://[::1]:123/index.html')
-  })
-
-  it('should detect SSL/TLS protocol', function () {
-    var req = {
-      headers: {
-        host: 'example.org:123'
-      },
-      protocol: 'http:',
-      socket: {
-        ssl: {}
-      },
-      url: 'index.html'
-    }
-
-    absoluteUrl()(req, null, function () {})
-
-    assert.equal(req.absoluteUrl(), 'https://example.org:123/index.html')
-  })
-
-  it('should skip default HTTP port', function () {
-    var req = {
-      headers: {
-        host: 'example.org:80'
-      },
-      protocol: 'http:',
-      socket: {},
-      url: 'index.html'
-    }
-
-    absoluteUrl()(req, null, function () {})
-
-    assert.equal(req.absoluteUrl(), 'http://example.org/index.html')
-  })
-
-  it('should skip default HTTPS port', function () {
-    var req = {
-      headers: {
-        host: 'example.org:443'
-      },
-      protocol: 'http:',
-      socket: {
-        ssl: {}
-      },
-      url: 'index.html'
-    }
-
-    absoluteUrl()(req, null, function () {})
-
-    assert.equal(req.absoluteUrl(), 'https://example.org/index.html')
-  })
-
-  it('should use basePath', function () {
-    var req = {
-      headers: {
-        host: 'example.org:123'
-      },
-      protocol: 'http:',
-      socket: {},
-      url: 'index.html'
-    }
-
-    absoluteUrl({basePath: 'test'})(req, null, function () {})
-
-    assert.equal(req.absoluteUrl(), 'http://example.org:123/test/index.html')
-  })
-
-  it('should ignore proxy headers if not enabled', function () {
-    var req = {
-      headers: {
-        host: 'example.org:123',
-        'x-forwarded-proto': 'https',
-        'x-forwarded-host': 'otherhost',
-        'x-forwarded-port': 456
-      },
-      protocol: 'http:',
-      socket: {},
-      url: 'index.html'
-    }
-
-    absoluteUrl()(req, null, function () {})
-
-    assert.equal(req.absoluteUrl(), 'http://example.org:123/index.html')
-  })
-
-  it('should use proxy headers', function () {
-    var req = {
-      app: {
-        get: function (key) { return key === 'trust proxy' }
-      },
-      hostname: 'example.org',
-      protocol: 'http:',
-      socket: {
-        address: function () { return { port: 123 } }
-      },
-      url: 'index.html',
-      headers: {
-        'x-forwarded-proto': 'https',
-        'x-forwarded-host': 'otherhost:456'
-      }
-    }
-
-    absoluteUrl()(req, null, function () {})
-
-    assert.equal(req.absoluteUrl(), 'https://otherhost:456/index.html')
-  })
-
-  describe('.attach', function () {
-    it('should attach the .absoluteUrl method to the request', function () {
-      var req = {}
-
-      absoluteUrl.attach(req)
-
-      assert.equal(typeof req.absoluteUrl, 'function')
+      strictEqual(url.protocol, 'http:')
     })
 
-    it('should do nothing if there is already a .absoluteUrl method', function () {
-      var func = function () {}
-      var req = {
-        absoluteUrl: func
-      }
+    it('should return a URL with https: protocol (encrypted connection)', async () => {
+      const url = await testWithExpress(async app => {
+        await request(app)
+          .get('/index.html')
+          .trustLocalhost(true)
+      }, { https: true })
 
-      absoluteUrl.attach(req)
+      strictEqual(url.protocol, 'https:')
+    })
 
-      assert.equal(req.absoluteUrl, func)
+    it('should return a URL with https: protocol from x-header (proxy enabled)', async () => {
+      const url = await testWithExpress(async app => {
+        await request(app)
+          .get('/index.html')
+          .set('x-forwarded-proto', 'https')
+      }, { proxy: true })
+
+      strictEqual(url.protocol, 'https:')
+    })
+
+    it('should return a URL with http: protocol ignoring x-header (proxy disabled)', async () => {
+      const url = await testWithExpress(async app => {
+        await request(app)
+          .get('/index.html')
+          .set('x-forwarded-proto', 'https')
+      })
+
+      strictEqual(url.protocol, 'http:')
+    })
+  })
+
+  describe('hostname', () => {
+    it('should return a URL with example.org hostname', async () => {
+      const url = await testWithExpress(async app => {
+        await request(app)
+          .get('/index.html')
+          .set('host', 'example.org')
+      })
+
+      strictEqual(url.hostname, 'example.org')
+    })
+
+    it('should return a URL with example.org hostname from x-header (proxy enabled)', async () => {
+      const url = await testWithExpress(async app => {
+        await request(app)
+          .get('/index.html')
+          .set('host', 'example.com')
+          .set('x-forwarded-host', 'example.org')
+      }, { proxy: true })
+
+      strictEqual(url.hostname, 'example.org')
+    })
+
+    it('should return a URL with example.org hostname ignoring x-header (proxy disabled)', async () => {
+      const url = await testWithExpress(async app => {
+        await request(app)
+          .get('/index.html')
+          .set('host', 'example.org')
+          .set('x-forwarded-host', 'example.com')
+      })
+
+      strictEqual(url.hostname, 'example.org')
+    })
+  })
+
+  describe('port', () => {
+    it('should return a URL with port from socket', async () => {
+      let port = 0
+
+      const url = await testWithExpress(async app => {
+        const res = await request(app)
+          .get('/index.html')
+
+        port = res.res.socket.remotePort.toString()
+      })
+
+      strictEqual(url.port, port)
+    })
+
+    it('should return a URL with port from x-header (proxy enabled)', async () => {
+      const url = await testWithExpress(async app => {
+        await request(app)
+          .get('/index.html')
+          .set('host', 'example.com')
+          .set('x-forwarded-host', 'example.org:8080')
+      }, { proxy: true })
+
+      strictEqual(url.port, '8080')
+    })
+
+    it('should return a URL with port from socket ignoring x-header (proxy disabled)', async () => {
+      let port = 0
+
+      const url = await testWithExpress(async app => {
+        const res = await request(app)
+          .get('/index.html')
+          .set('x-forwarded-host', 'example.com')
+
+        port = res.res.socket.remotePort.toString()
+      })
+
+      strictEqual(url.port, port)
+    })
+  })
+
+  describe('pathname', () => {
+    it('should return a URL with /index.html pathname', async () => {
+      const url = await testWithExpress(async app => {
+        await request(app)
+          .get('/index.html')
+      })
+
+      strictEqual(url.pathname, '/index.html')
+    })
+  })
+
+  describe('search', () => {
+    it('should return a URL with ?a=b&c=1 search', async () => {
+      const url = await testWithExpress(async app => {
+        await request(app)
+          .get('/index.html?a=b&c=1')
+      })
+
+      strictEqual(url.search, '?a=b&c=1')
+    })
+  })
+
+  describe('custom function', () => {
+    it('should return a URL create by the custom absoluteUrl function', async () => {
+      const url = await testWithExpress(async app => {
+        await request(app)
+          .get('/')
+      }, { absoluteUrl: () => new URL('http://example.org/') })
+
+      strictEqual(url.hostname, 'example.org')
+    })
+  })
+
+  describe('middleware', () => {
+    it('should assign the absoluteUrl method to the req object', async () => {
+      const url = await testWithExpress(async app => {
+        await request(app)
+          .get('/')
+      }, { middleware: true })
+
+      strictEqual(url.pathname, '/')
+    })
+
+    it('should return a URL create by the custom absoluteUrl function', async () => {
+      const url = await testWithExpress(async app => {
+        await request(app)
+          .get('/')
+      }, { absoluteUrl: () => new URL('http://example.org/'), middleware: true })
+
+      strictEqual(url.hostname, 'example.org')
     })
   })
 })
