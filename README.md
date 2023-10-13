@@ -1,27 +1,53 @@
 # absolute-url
 
-Attaches .absoluteUrl() function to req.
+[![build status](https://img.shields.io/github/actions/workflow/status/bergos/absolute-url/test.yaml?branch=master)](https://github.com/bergos/absolute-url/actions/workflows/test.yaml)
+[![npm version](https://img.shields.io/npm/v/absolute-url.svg)](https://www.npmjs.com/package/absolute-url)
+
+Get the absolute URL of an Express request object.
+
+## Install
+
+```bash
+npm install --save absolute-url
+```
 
 ## Usage
 
-    // load module
-    var absoluteUrl = require('absolute-url')
+The library offers two ways to use the functionality:
 
-    // add routing
-    app.use(absoluteUrl())
+### Function
 
-    // use it in your middleware
-    app.use(function (req, res, next) {
-      console.log(req.absoluteUrl())
-    })
+The default export is a function that can be called with the Express request object as a parameter.
+It returns the absolute URL as a `URL` object.
 
-### Attaching
+```javascript
+import absoluteUrl from 'absolute-url'
 
-If you don't know if `absolute-url` is used as middleware, it's possible to attach it dynamically.
-That is usefull inside of a middleware where you want to use an application specific instance (with options) or the default one.
+app.use((req, res, next) => {
+  console.log(absoluteUrl(req))
 
-    app.use(function (req, res, next) {
-      absoluteUrl.attach(req)
+  next()
+})
+```
 
-      console.log(req.absoluteUrl())
-    })
+See `examples/function.js` for a full working example.
+
+### Middleware
+
+The package also exports a `middleware` factory function.
+It can be used to attach a `.absoluteUrl` method to the Express request object.
+The method returns the absolute URL as a `URL` object.
+
+```javascript
+import { middleware } from 'absolute-url'
+
+app.use(middleware())
+
+app.use((req, res, next) => {
+  console.log(req.absoluteUrl())
+
+  next()
+})
+```
+
+See `examples/middleware.js` for a full working example.
