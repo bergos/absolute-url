@@ -10,8 +10,8 @@ function _absoluteUrl (req) {
   return new URL(`${req.protocol}://${host}${req.originalUrl}`)
 }
 
-function absoluteUrl (req) {
-  if (typeof req.absoluteUrl === 'function') {
+function absoluteUrl (req, { ignoreReqAbsoluteUrl } = {}) {
+  if (!ignoreReqAbsoluteUrl && typeof req.absoluteUrl === 'function') {
     return req.absoluteUrl()
   }
 
