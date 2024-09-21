@@ -3,7 +3,7 @@ import { createServer as createHttpsServer } from 'node:https'
 import express from 'express'
 import absoluteUrlFunction, { middleware as absoluteUrlMiddleware } from '../../index.js'
 
-async function testWithExpress (func, { absoluteUrl, https, middleware, proxy } = {}) {
+async function testWithExpress (func, { absoluteUrl, args, https, middleware, proxy } = {}) {
   let url = null
 
   const app = express()
@@ -29,7 +29,7 @@ async function testWithExpress (func, { absoluteUrl, https, middleware, proxy } 
 
   // get the URL from middleware or function
   app.use((req, res, next) => {
-    url = middleware ? req.absoluteUrl() : absoluteUrlFunction(req)
+    url = middleware ? req.absoluteUrl(args) : absoluteUrlFunction(req, args)
 
     next()
   })

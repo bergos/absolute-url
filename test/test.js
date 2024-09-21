@@ -150,6 +150,19 @@ describe('absoluteUrl', function () {
 
       strictEqual(url.hostname, 'example.org')
     })
+
+    it('should ignore the custom absoluteUrl function if ignoreReqAbsoluteUrl is true', async () => {
+      const url = await testWithExpress(async app => {
+        await request(app)
+          .get('/')
+          .set('host', 'example.org')
+      }, {
+        absoluteUrl: () => new URL('http://example.com/'),
+        args: { ignoreReqAbsoluteUrl: true }
+      })
+
+      strictEqual(url.hostname, 'example.org')
+    })
   })
 
   describe('middleware', () => {
